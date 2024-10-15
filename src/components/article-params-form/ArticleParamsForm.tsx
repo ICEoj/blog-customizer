@@ -4,7 +4,14 @@ import { Text } from 'components/text';
 import { Select } from 'components/select';
 import { RadioGroup } from 'components/radio-group';
 import { Separator } from 'components/separator';
-import { useState, FormEventHandler, FC, useRef } from 'react';
+import {
+	useState,
+	FormEventHandler,
+	FC,
+	useRef,
+	Dispatch,
+	SetStateAction,
+} from 'react';
 import clsx from 'clsx';
 
 import {
@@ -23,31 +30,30 @@ import { useOutsideClickClose } from 'components/select/hooks/useOutsideClickClo
 import styles from './ArticleParamsForm.module.scss';
 
 interface ArticleParamsFormProps {
-	onSubmit(state: ArticleStateType): void;
-	onReset(): void;
+	setArticleState: Dispatch<SetStateAction<ArticleStateType>>;
 }
 
 export const ArticleParamsForm: FC<ArticleParamsFormProps> = ({
-	onReset,
-	onSubmit,
+	setArticleState,
 }) => {
 	const asideRef = useRef<HTMLDivElement>(null);
 	const [isOpen, setIsOpen] = useState<boolean>(false);
-	const [state, setState] = useState<ArticleStateType>(defaultArticleState);
+	const [articleParamsState, setArticleParamsState] =
+		useState<ArticleStateType>(defaultArticleState);
 
 	const onChangeField =
 		(name: keyof ArticleStateType) => (selected: OptionType) =>
-			setState((prev) => ({ ...prev, [name]: selected }));
+			setArticleParamsState((prev) => ({ ...prev, [name]: selected }));
 
 	const onFormReset: FormEventHandler<HTMLFormElement> = (event) => {
 		event.preventDefault();
-		setState(defaultArticleState);
-		onReset();
+		setArticleParamsState(defaultArticleState);
+		setArticleState(defaultArticleState);
 	};
 
 	const onFormSubmit: FormEventHandler<HTMLFormElement> = (event) => {
 		event.preventDefault();
-		onSubmit(state);
+		setArticleState(articleParamsState);
 	};
 
 	const onClickArrowButton = () => setIsOpen((prev) => !prev);
@@ -59,9 +65,10 @@ export const ArticleParamsForm: FC<ArticleParamsFormProps> = ({
 	});
 
 	return (
-		<div ref={asideRef}>
+		<>
 			<ArrowButton onClick={onClickArrowButton} isOpen={isOpen} />
 			<aside
+				ref={asideRef}
 				className={clsx(styles.container, {
 					[styles.container_open]: isOpen,
 				})}>
@@ -74,33 +81,33 @@ export const ArticleParamsForm: FC<ArticleParamsFormProps> = ({
 					</Text>
 					<Select
 						title='Шрифт'
-						selected={state.fontFamilyOption}
+						selected={articleParamsState.fontFamilyOption}
 						options={fontFamilyOptions}
 						onChange={onChangeField('fontFamilyOption')}
 					/>
 					<RadioGroup
 						title='Размер шрифта'
-						selected={state.fontSizeOption}
+						selected={articleParamsState.fontSizeOption}
 						name='fontSize'
 						options={fontSizeOptions}
 						onChange={onChangeField('fontSizeOption')}
 					/>
 					<Select
 						title='Цвет шрифта'
-						selected={state.fontColor}
+						selected={articleParamsState.fontColor}
 						options={fontColors}
 						onChange={onChangeField('fontColor')}
 					/>
 					<Separator toneDown />
 					<Select
 						title='Цвет фона'
-						selected={state.backgroundColor}
+						selected={articleParamsState.backgroundColor}
 						options={backgroundColors}
 						onChange={onChangeField('backgroundColor')}
 					/>
 					<Select
 						title='Ширина контента'
-						selected={state.contentWidth}
+						selected={articleParamsState.contentWidth}
 						options={contentWidthArr}
 						onChange={onChangeField('contentWidth')}
 					/>
@@ -110,6 +117,6 @@ export const ArticleParamsForm: FC<ArticleParamsFormProps> = ({
 					</div>
 				</form>
 			</aside>
-		</div>
+		</>
 	);
 };
